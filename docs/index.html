@@ -91,13 +91,6 @@
   .dp-day.dp-selected, .dp-day.dp-selected:hover { background: var(--primary); color: var(--primary-foreground); }
   .dp-day:disabled { color: var(--muted-foreground); opacity: 0.4; cursor: not-allowed; }
 
-  .copy-btn {
-    display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 8px;
-    border: 1px solid var(--border); border-radius: 6px; background: #fff; font-size: 12px;
-    color: var(--gray); cursor: pointer; vertical-align: middle;
-  }
-  .copy-btn:hover { background: #f7f5f4; }
-  .copy-btn.copied { color: var(--primary); border-color: var(--primary); }
 
   main { padding: 32px; }
   h2 { font-size: 26px; margin-bottom: 8px; }
@@ -135,8 +128,6 @@
   footer { padding: 24px 32px; font-size: 12px; color: var(--gray); border-top: 1px solid var(--border); }
   footer b { color: #1f1f1f; }
   .empty { color: var(--gray); padding: 24px 32px; }
-  .permalink { font-size: 13px; margin-top: -12px; margin-bottom: 24px; padding: 0 32px; }
-  .permalink a { color: var(--red); }
   .pdf-btn {
     padding: 10px 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff;
     color: #1f1f1f; font-size: 14px; font-weight: 700; cursor: pointer;
@@ -150,7 +141,7 @@
   }
 
   @media print {
-    .toolbar, .permalink, .period-note { display: none !important; }
+    .toolbar, .period-note { display: none !important; }
     body { background: #fff; }
   }
 </style>
@@ -177,7 +168,6 @@
     <button id="pdfBtn" type="button" class="pdf-btn" style="display:none">⬇ Baixar PDF</button>
   </div>
   <p class="period-note" id="periodNote" style="display:none"></p>
-  <p class="permalink" id="permalink" style="display:none"></p>
 
   <div id="reportView"></div>
   <p class="empty" id="emptyMsg" style="display:none">Nenhum relatório encontrado para esse cliente/período. Rode o workflow "Gerar relatório" no GitHub Actions.</p>
@@ -438,7 +428,6 @@
     if (matches.length === 0) {
       document.getElementById('reportView').innerHTML = '';
       document.getElementById('pdfBtn').style.display = 'none';
-      document.getElementById('permalink').style.display = 'none';
       periodNote.style.display = 'none';
       emptyMsg.style.display = 'block';
       const orgName = document.getElementById('orgSelect').selectedOptions[0]?.textContent ?? '';
@@ -481,19 +470,6 @@
     const url = new URL(window.location.href);
     url.searchParams.set('r', dataFile);
     window.history.replaceState({}, '', url);
-    const permalink = document.getElementById('permalink');
-    permalink.style.display = 'block';
-    permalink.innerHTML = `Link direto pra esse relatório: <a href="${url}">${url}</a> <button type="button" class="copy-btn" id="copyLinkBtn">Copiar</button>`;
-    document.getElementById('copyLinkBtn').addEventListener('click', (ev) => {
-      navigator.clipboard.writeText(url.toString()).then(() => {
-        ev.target.textContent = 'Copiado ✓';
-        ev.target.classList.add('copied');
-        setTimeout(() => {
-          ev.target.textContent = 'Copiar';
-          ev.target.classList.remove('copied');
-        }, 1500);
-      });
-    });
   }
 
   function init(entries) {
