@@ -1,0 +1,18 @@
+{
+  "orgName": "CBS - Curitiba Beach Sports",
+  "periodLabel": "1 a 31 de julho de 2026",
+  "startDate": "01/07/2026",
+  "endDate": "31/07/2026",
+  "totalDays": 31,
+  "messages": {
+    "USER": 0,
+    "AGENT": 0,
+    "HUMAN": 0
+  },
+  "totalConversas": 0,
+  "resolvidaIa": 0,
+  "comHumano": 0,
+  "categoryCounts": [],
+  "totalMessagesForSource": 0,
+  "insights": {}
+}

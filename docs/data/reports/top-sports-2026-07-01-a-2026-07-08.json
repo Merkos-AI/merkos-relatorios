@@ -1,0 +1,107 @@
+{
+  "orgName": "Top Sports",
+  "periodLabel": "1 a 8 de julho de 2026",
+  "startDate": "01/07/2026",
+  "endDate": "08/07/2026",
+  "totalDays": 8,
+  "messages": {
+    "USER": 2378,
+    "AGENT": 851,
+    "HUMAN": 1674
+  },
+  "totalConversas": 349,
+  "resolvidaIa": 138,
+  "comHumano": 211,
+  "categoryCounts": [
+    {
+      "category": "Disponibilidade e reservas de quadra",
+      "count": 36,
+      "starred": false
+    },
+    {
+      "category": "Outros (não mapeados nas categorias fixas)",
+      "count": 26,
+      "starred": false
+    },
+    {
+      "category": "Churrasqueira, salão e eventos",
+      "count": 37,
+      "starred": false
+    },
+    {
+      "category": "Pediu atendente diretamente",
+      "count": 10,
+      "starred": false
+    },
+    {
+      "category": "Saudações e outros",
+      "count": 39,
+      "starred": true
+    },
+    {
+      "category": "Problemas com o aplicativo",
+      "count": 8,
+      "starred": false
+    },
+    {
+      "category": "Materiais, loja e achados & perdidos",
+      "count": 3,
+      "starred": false
+    },
+    {
+      "category": "Aulas e escolinhas",
+      "count": 6,
+      "starred": false
+    },
+    {
+      "category": "Pagamentos, estorno e nota fiscal",
+      "count": 7,
+      "starred": false
+    },
+    {
+      "category": "Contato iniciado pela equipe",
+      "count": 21,
+      "starred": true
+    },
+    {
+      "category": "Plano mensal / mensalista",
+      "count": 6,
+      "starred": false
+    },
+    {
+      "category": "Convênio Neodent",
+      "count": 2,
+      "starred": false
+    },
+    {
+      "category": "Lanchonete e reserva de mesa",
+      "count": 5,
+      "starred": false
+    },
+    {
+      "category": "Adversários e grupos de jogo",
+      "count": 4,
+      "starred": false
+    },
+    {
+      "category": "Parcerias, RH e fornecedores",
+      "count": 1,
+      "starred": false
+    }
+  ],
+  "totalMessagesForSource": 4903,
+  "insights": {
+    "Churrasqueira, salão e eventos": {
+      "title": "Churrasqueira, salão e eventos",
+      "body": "Preços, regras e pacotes já são respondidos pela equipe com textos padrão. Cadastrando essas informações, a IA responde na hora — inclusive fora do horário comercial."
+    },
+    "Disponibilidade e reservas de quadra": {
+      "title": "Consulta de horários livres",
+      "body": "\"Tem horário sábado às 16h?\" é a pergunta mais comum. Com acesso de leitura à agenda, a IA informa a disponibilidade em segundos e direciona a reserva para o app."
+    },
+    "Plano mensal / mensalista": {
+      "title": "Respostas diretas",
+      "body": "Plano mensal, chave Pix e nota fiscal, cardápio da lanchonete, convênio Neodent e contatos de RH e parcerias: respostas fixas que hoje sempre esperam um atendente."
+    }
+  }
+}

@@ -4,7 +4,7 @@ import { createClient } from './db.js';
 import { getOrganization, getMessageCountsByRole, getSessionDetails } from './queries.js';
 import { classifySessions } from './classify.js';
 import { renderReport } from './render.js';
-import { CONTATO_EQUIPE, SAUDACOES_OUTROS } from './categories.js';
+import { CONTATO_EQUIPE, SAUDACOES_OUTROS, STARRED } from './categories.js';
 import { getCategoriesForOrg, getInsightsForOrg } from './org-config.js';
 
 const MONTHS_PT = [
@@ -111,7 +111,7 @@ async function main() {
     count,
   }));
 
-  const html = renderReport({
+  const reportData = {
     orgName: org.name,
     periodLabel: periodLabel(startDate, endDate),
     startDate: formatDateBR(startDate),
@@ -124,7 +124,9 @@ async function main() {
     categoryCounts,
     totalMessagesForSource: messages.USER + messages.AGENT + messages.HUMAN,
     insights,
-  });
+  };
+
+  const html = renderReport(reportData);
 
   const orgSlug = slugify(org.name);
   const fileName = `${orgSlug}-${startDate}-a-${endDate}.html`;
@@ -133,6 +135,27 @@ async function main() {
   const outPath = path.join(outDir, fileName);
   writeFileSync(outPath, html, 'utf-8');
   console.log(`Relatorio gerado em docs/relatorios/${fileName}`);
+
+  // Dados crus (pra pagina indice renderizar direto via JS, sem recarregar)
+  const dataFileName = `${orgSlug}-${startDate}-a-${endDate}.json`;
+  const dataOutDir = path.join(process.cwd(), 'docs', 'data', 'reports');
+  mkdirSync(dataOutDir, { recursive: true });
+  writeFileSync(
+    path.join(dataOutDir, dataFileName),
+    JSON.stringify(
+      {
+        ...reportData,
+        categoryCounts: categoryCounts.map((c) => ({
+          ...c,
+          starred: STARRED.has(c.category),
+        })),
+      },
+      null,
+      2,
+    ),
+    'utf-8',
+  );
+  console.log(`Dados salvos em docs/data/reports/${dataFileName}`);
 
   // Atualiza indice de relatorios (docs/data/index.json)
   const indexPath = path.join(process.cwd(), 'docs', 'data', 'index.json');
@@ -144,6 +167,7 @@ async function main() {
     endDate: string;
     periodLabel: string;
     file: string;
+    dataFile: string;
     generatedAt: string;
   };
   let index: IndexEntry[] = [];
@@ -160,6 +184,7 @@ async function main() {
     endDate,
     periodLabel: periodLabel(startDate, endDate),
     file: `relatorios/${fileName}`,
+    dataFile: `data/reports/${dataFileName}`,
     generatedAt: new Date().toISOString(),
   });
   index.sort((a, b) => (a.startDate < b.startDate ? 1 : -1));

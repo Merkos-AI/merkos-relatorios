@@ -1,0 +1,39 @@
+{
+  "orgName": "Talula Cablepark",
+  "periodLabel": "1 a 31 de julho de 2026",
+  "startDate": "01/07/2026",
+  "endDate": "31/07/2026",
+  "totalDays": 31,
+  "messages": {
+    "USER": 290,
+    "AGENT": 213,
+    "HUMAN": 10
+  },
+  "totalConversas": 57,
+  "resolvidaIa": 53,
+  "comHumano": 4,
+  "categoryCounts": [
+    {
+      "category": "Outros (não mapeados nas categorias fixas)",
+      "count": 1,
+      "starred": false
+    },
+    {
+      "category": "Saudações e outros",
+      "count": 1,
+      "starred": true
+    },
+    {
+      "category": "Dúvidas sobre local, equipamentos e regras",
+      "count": 1,
+      "starred": false
+    },
+    {
+      "category": "Contato iniciado pela equipe",
+      "count": 1,
+      "starred": true
+    }
+  ],
+  "totalMessagesForSource": 513,
+  "insights": {}
+}

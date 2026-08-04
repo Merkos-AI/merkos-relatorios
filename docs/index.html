@@ -5,96 +5,336 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Relatórios de Atendimento com IA — Merkos</title>
 <style>
-  :root { --dark: #171110; --red: #c8102e; --border: #e5e2e0; --gray: #5c5c5c; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fff; color: #1f1f1f; }
-  header { background: var(--dark); color: #fff; padding: 28px 32px; }
-  header h1 { margin: 0 0 4px; font-size: 20px; }
-  header p { margin: 0; opacity: .75; font-size: 14px; }
-  main { max-width: 880px; margin: 0 auto; padding: 32px; }
-  .filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-  select, input {
-    padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+  :root {
+    --dark: #171110;
+    --red: #c8102e;
+    --blue: #2f6fdb;
+    --gray: #5c5c5c;
+    --border: #e5e2e0;
   }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-  th { color: var(--gray); font-weight: 600; }
-  a.report-link { color: var(--red); text-decoration: none; font-weight: 600; }
-  a.report-link:hover { text-decoration: underline; }
-  .empty { color: var(--gray); padding: 24px 0; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1f1f1f;
+    background: #fff;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding-bottom: 60px; }
+  header {
+    background: var(--dark);
+    color: #fff;
+    padding: 28px 32px;
+  }
+  header img { height: 32px; margin-bottom: 16px; }
+  header h1 { font-size: 20px; margin: 0 0 4px; }
+  header p { margin: 0; opacity: 0.75; font-size: 14px; }
+
+  .toolbar {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    padding: 24px 32px 0;
+  }
+  .toolbar select, .toolbar input {
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; background: #fff;
+  }
+  .toolbar select#orgSelect { min-width: 220px; }
+  .toolbar label { font-size: 13px; color: var(--gray); display: flex; flex-direction: column; gap: 4px; }
+  .toolbar button {
+    padding: 10px 20px; border: none; border-radius: 8px; background: var(--red);
+    color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; align-self: flex-end;
+  }
+  .toolbar button:hover { opacity: 0.9; }
+  .period-note { padding: 0 32px; margin-top: 8px; font-size: 13px; color: var(--gray); }
+  .period-note select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+
+  main { padding: 32px; }
+  h2 { font-size: 26px; margin-bottom: 8px; }
+  .lead { color: var(--gray); line-height: 1.5; margin-bottom: 28px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card .num { font-size: 32px; font-weight: 800; }
+  .card .num.red { color: var(--red); }
+  .card .num.blue { color: var(--blue); }
+  .card .label { margin-top: 4px; font-size: 14px; }
+  .card .sub { color: var(--gray); font-size: 13px; }
+  section { border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  section h3 { margin-top: 0; font-size: 18px; }
+  section .desc { color: var(--gray); font-size: 14px; margin-bottom: 16px; }
+  .split-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+  .split-bar .ia { background: var(--red); }
+  .split-bar .humano { background: var(--blue); }
+  .legend { display: flex; gap: 24px; font-size: 14px; flex-wrap: wrap; }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .legend .ia-dot { background: var(--red); }
+  .legend .humano-dot { background: var(--blue); }
+  .cat-row { display: grid; grid-template-columns: 220px 1fr 110px; align-items: center; gap: 12px; margin-bottom: 14px; font-size: 14px; }
+  .cat-bar-track { background: #f1efee; border-radius: 6px; height: 14px; overflow: hidden; }
+  .cat-bar-fill { background: var(--red); height: 100%; }
+  .cat-bar-fill.muted { background: #b9b6b4; }
+  .cat-value { text-align: right; color: var(--gray); font-size: 13px; }
+  .footnote { font-size: 12px; color: var(--gray); margin-top: 8px; }
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .insight-card { border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .insight-tag { display: inline-block; background: #fde8ea; color: var(--red); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+  .insight-card h3 { font-size: 15px; margin: 0 0 6px; }
+  .insight-card p { font-size: 13px; color: var(--gray); margin: 0; line-height: 1.5; }
+  .highlight { background: #fde8ea; border-radius: 12px; padding: 18px 20px; font-size: 15px; }
+  .highlight b { color: var(--red); }
+  footer { padding: 24px 32px; font-size: 12px; color: var(--gray); border-top: 1px solid var(--border); }
+  footer b { color: #1f1f1f; }
+  .empty { color: var(--gray); padding: 24px 32px; }
+  .permalink { font-size: 13px; margin-top: -12px; margin-bottom: 24px; padding: 0 32px; }
+  .permalink a { color: var(--red); }
+  .pdf-btn {
+    padding: 10px 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff;
+    color: #1f1f1f; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .pdf-btn:hover { background: #f7f5f4; }
+
+  @media (max-width: 600px) {
+    .cards, .insight-grid { grid-template-columns: 1fr; }
+    .cat-row { grid-template-columns: 1fr; }
+    .cat-value { text-align: left; }
+  }
+
+  @media print {
+    .toolbar, .permalink, .period-note { display: none !important; }
+    body { background: #fff; }
+  }
 </style>
 </head>
 <body>
+<div class="page">
   <header>
-    <h1>Relatórios de Atendimento com IA</h1>
-    <p>Sistema isolado de relatórios por cliente — não afeta a produção do Merkos</p>
+    <img src="assets/merkos-logo.png" alt="Merkos" />
+    <h1>Relatório de Atendimento com IA</h1>
+    <p id="headerSubtitle">Selecione um cliente para ver o relatório</p>
   </header>
-  <main>
-    <div class="filters">
-      <select id="orgFilter"><option value="">Todos os clientes</option></select>
-      <input type="date" id="startFilter" title="A partir de" />
-      <input type="date" id="endFilter" title="Até" />
-    </div>
-    <table>
-      <thead>
-        <tr><th>Cliente</th><th>Período</th><th>Gerado em</th><th></th></tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
-    <p class="empty" id="emptyMsg" style="display:none">Nenhum relatório gerado ainda. Rode o workflow "Gerar relatório" no GitHub Actions.</p>
-  </main>
+
+  <div class="toolbar">
+    <label>Cliente
+      <select id="orgSelect"></select>
+    </label>
+    <label>A partir de
+      <input type="date" id="startFilter" />
+    </label>
+    <label>Até
+      <input type="date" id="endFilter" />
+    </label>
+    <button id="filterBtn" type="button">Filtrar</button>
+    <button id="pdfBtn" type="button" class="pdf-btn" style="display:none">⬇ Baixar PDF</button>
+  </div>
+  <p class="period-note" id="periodNote" style="display:none"></p>
+  <p class="permalink" id="permalink" style="display:none"></p>
+
+  <div id="reportView"></div>
+  <p class="empty" id="emptyMsg" style="display:none">Nenhum relatório encontrado para esse cliente/período. Rode o workflow "Gerar relatório" no GitHub Actions.</p>
+</div>
 
 <script>
   let allEntries = [];
+  let currentData = null;
 
-  function render() {
-    const orgFilter = document.getElementById('orgFilter').value;
+  function pct(part, total) {
+    if (total === 0) return '0,0';
+    return ((part / total) * 100).toFixed(1).replace('.', ',');
+  }
+
+  function barWidth(count, max) {
+    return max === 0 ? 0 : Math.round((count / max) * 100);
+  }
+
+  function genericInsight(category) {
+    return {
+      title: category,
+      body: 'Essas perguntas já têm resposta padrão hoje. Cadastrando essas informações na base de conhecimento, a IA responde na hora — inclusive fora do horário comercial.',
+    };
+  }
+
+  function renderReport(data) {
+    const totalResolvidas = data.resolvidaIa + data.comHumano;
+    const resolvidaPct = pct(data.resolvidaIa, totalResolvidas);
+    const humanoPct = pct(data.comHumano, totalResolvidas);
+    const resolvidaWidth = totalResolvidas === 0 ? 0 : (data.resolvidaIa / totalResolvidas) * 100;
+
+    const sortedCategories = [...data.categoryCounts].sort((a, b) => b.count - a.count);
+    const maxCount = sortedCategories.length > 0 ? sortedCategories[0].count : 0;
+    const totalHumano = data.comHumano || 1;
+
+    const categoryRows = sortedCategories
+      .map((c) => `
+        <div class="cat-row">
+          <div class="cat-label">${c.category}${c.starred ? ' *' : ''}</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill ${c.starred ? 'muted' : ''}" style="width:${barWidth(c.count, maxCount)}%"></div></div>
+          <div class="cat-value">${c.count} · ${pct(c.count, totalHumano)}%</div>
+        </div>`)
+      .join('\n');
+
+    const eligibleForInsights = sortedCategories.filter((c) => !c.starred);
+    const top3 = eligibleForInsights.slice(0, 3);
+
+    const topInsights = top3
+      .map((c) => {
+        const insight = data.insights[c.category] || genericInsight(c.category);
+        return `
+          <div class="insight-card">
+            <span class="insight-tag">${pct(c.count, totalHumano)}% das conversas</span>
+            <h3>${insight.title}</h3>
+            <p>${insight.body}</p>
+          </div>`;
+      })
+      .join('\n');
+
+    const insightsTotalPct = top3.reduce((sum, c) => sum + (c.count / totalHumano) * 100, 0);
+    const messagesPerDay = Math.round(data.messages.USER / data.totalDays);
+    const totalMsgs = data.messages.USER + data.messages.AGENT + data.messages.HUMAN;
+
+    document.getElementById('headerSubtitle').textContent = `${data.orgName} · ${data.periodLabel}`;
+
+    document.getElementById('reportView').innerHTML = `
+      <main>
+        <h2>Como a IA atendeu seus clientes no WhatsApp</h2>
+        <p class="lead">Resumo de todas as conversas do período: o volume de mensagens, quanto a assistente virtual resolveu sozinha e quais assuntos ainda precisaram da sua equipe — com as oportunidades para a IA atender ainda mais.</p>
+
+        <div class="cards">
+          <div class="card"><div class="num">${data.messages.USER.toLocaleString('pt-BR')}</div><div class="label">Mensagens recebidas de clientes</div><div class="sub">≈ ${messagesPerDay} por dia</div></div>
+          <div class="card"><div class="num red">${data.messages.AGENT.toLocaleString('pt-BR')}</div><div class="label">Respostas enviadas pela IA</div><div class="sub">automáticas, em segundos</div></div>
+          <div class="card"><div class="num blue">${data.messages.HUMAN.toLocaleString('pt-BR')}</div><div class="label">Mensagens enviadas pela equipe</div><div class="sub">atendimento humano</div></div>
+          <div class="card"><div class="num">${data.totalConversas.toLocaleString('pt-BR')}</div><div class="label">Conversas no período</div><div class="sub">${data.totalDays} dias</div></div>
+        </div>
+
+        <section>
+          <h3>Quem atendeu cada conversa</h3>
+          <p class="desc">Das ${data.totalConversas.toLocaleString('pt-BR')} conversas, a IA resolveu ${data.resolvidaIa.toLocaleString('pt-BR')} do início ao fim. As outras ${data.comHumano.toLocaleString('pt-BR')} tiveram participação da equipe — por transferência da IA ou contato direto.</p>
+          <div class="split-bar"><div class="ia" style="width:${resolvidaWidth}%"></div><div class="humano" style="width:${100 - resolvidaWidth}%"></div></div>
+          <div class="legend">
+            <span><span class="dot ia-dot"></span>Resolvidas 100% pela IA — <b>${data.resolvidaIa} (${resolvidaPct}%)</b></span>
+            <span><span class="dot humano-dot"></span>Com atendimento humano — <b>${data.comHumano} (${humanoPct}%)</b></span>
+          </div>
+        </section>
+
+        <section>
+          <h3>Assuntos das conversas que foram para a equipe</h3>
+          <p class="desc">Cada uma das ${data.comHumano.toLocaleString('pt-BR')} conversas com atendimento humano foi classificada pelo assunto que motivou a participação da equipe.</p>
+          ${categoryRows}
+          <p class="footnote">* Não são limitações da IA: mensagens enviadas pela própria equipe (confirmações, cobranças) e conversas sem assunto definido.</p>
+        </section>
+
+        <section>
+          <h3>Onde a IA pode passar a atender</h3>
+          <p class="desc">Frentes que cobrem a maior parte das transferências de hoje:</p>
+          <div class="insight-grid">${topInsights}</div>
+          <br/>
+          <div class="highlight">Somadas, essas frentes representam até <b>${insightsTotalPct.toFixed(0)}% das conversas</b> que hoje vão para a equipe — e que a IA poderia atender de imediato.</div>
+        </section>
+      </main>
+      <footer>
+        Fonte: conversas de WhatsApp da ${data.orgName} entre ${data.startDate} e ${data.endDate} (${data.totalConversas.toLocaleString('pt-BR')} conversas, ${totalMsgs.toLocaleString('pt-BR')} mensagens). Classificação de assuntos feita a partir das mensagens do cliente imediatamente anteriores à entrada da equipe na conversa, via IA. — <b>Merkos</b>
+      </footer>
+    `;
+  }
+
+  // Um relatorio "cobre" o filtro se o intervalo dele tem qualquer sobreposicao
+  // com [startFilter, endFilter]. Datas em branco = sem limite naquele lado.
+  function matchesDateFilter(entry, startFilter, endFilter) {
+    if (startFilter && entry.endDate < startFilter) return false;
+    if (endFilter && entry.startDate > endFilter) return false;
+    return true;
+  }
+
+  function applyFilter() {
+    const orgSlug = document.getElementById('orgSelect').value;
     const startFilter = document.getElementById('startFilter').value;
     const endFilter = document.getElementById('endFilter').value;
 
-    let filtered = allEntries.filter((e) => {
-      if (orgFilter && e.orgSlug !== orgFilter) return false;
-      if (startFilter && e.endDate < startFilter) return false;
-      if (endFilter && e.startDate > endFilter) return false;
-      return true;
-    });
+    const matches = allEntries
+      .filter((e) => e.orgSlug === orgSlug && matchesDateFilter(e, startFilter, endFilter))
+      .sort((a, b) => (a.startDate < b.startDate ? 1 : -1));
 
-    const rows = document.getElementById('rows');
-    rows.innerHTML = filtered
-      .map(
-        (e) => `<tr>
-          <td>${e.org}</td>
-          <td>${e.periodLabel}</td>
-          <td>${new Date(e.generatedAt).toLocaleDateString('pt-BR')}</td>
-          <td><a class="report-link" href="${e.file}" target="_blank">Abrir relatório →</a></td>
-        </tr>`,
-      )
-      .join('');
+    const periodNote = document.getElementById('periodNote');
+    const emptyMsg = document.getElementById('emptyMsg');
 
-    document.getElementById('emptyMsg').style.display = filtered.length === 0 ? 'block' : 'none';
+    if (matches.length === 0) {
+      document.getElementById('reportView').innerHTML = '';
+      document.getElementById('pdfBtn').style.display = 'none';
+      periodNote.style.display = 'none';
+      emptyMsg.style.display = 'block';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+
+    if (matches.length > 1) {
+      periodNote.style.display = 'block';
+      periodNote.innerHTML = `${matches.length} relatórios encontrados nesse intervalo — mostrando o mais recente (${matches[0].periodLabel}). Outros: ${matches
+        .slice(1)
+        .map((m) => `<a href="#" data-file="${m.dataFile}" class="pick-period">${m.periodLabel}</a>`)
+        .join(', ')}`;
+      periodNote.querySelectorAll('.pick-period').forEach((a) => {
+        a.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          loadReport(a.dataset.file);
+        });
+      });
+    } else {
+      periodNote.style.display = 'none';
+    }
+
+    loadReport(matches[0].dataFile);
+  }
+
+  function loadReport(dataFile) {
+    updatePermalink(dataFile);
+    fetch(dataFile)
+      .then((r) => r.json())
+      .then((data) => {
+        currentData = data;
+        renderReport(data);
+        document.getElementById('pdfBtn').style.display = 'inline-block';
+      });
+  }
+
+  function updatePermalink(dataFile) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('r', dataFile);
+    window.history.replaceState({}, '', url);
+    const permalink = document.getElementById('permalink');
+    permalink.style.display = 'block';
+    permalink.innerHTML = `Link direto pra esse relatório: <a href="${url}">${url}</a>`;
+  }
+
+  function init(entries) {
+    allEntries = entries;
+    if (entries.length === 0) {
+      document.getElementById('emptyMsg').style.display = 'block';
+      return;
+    }
+
+    const orgs = [...new Map(entries.map((e) => [e.orgSlug, e.org])).entries()];
+    const orgSelect = document.getElementById('orgSelect');
+    orgSelect.innerHTML = orgs.map(([slug, name]) => `<option value="${slug}">${name}</option>`).join('');
+
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get('r');
+    const requestedEntry = requested ? entries.find((e) => e.dataFile === requested) : null;
+
+    orgSelect.value = requestedEntry ? requestedEntry.orgSlug : orgs[0][0];
+    if (requestedEntry) {
+      document.getElementById('startFilter').value = requestedEntry.startDate;
+      document.getElementById('endFilter').value = requestedEntry.endDate;
+    }
+
+    applyFilter();
+
+    document.getElementById('filterBtn').addEventListener('click', applyFilter);
+    document.getElementById('pdfBtn').addEventListener('click', () => window.print());
   }
 
   fetch('data/index.json')
     .then((r) => r.json())
-    .then((data) => {
-      allEntries = data;
-      const orgs = [...new Map(data.map((e) => [e.orgSlug, e.org])).entries()];
-      const select = document.getElementById('orgFilter');
-      for (const [slug, name] of orgs) {
-        const opt = document.createElement('option');
-        opt.value = slug;
-        opt.textContent = name;
-        select.appendChild(opt);
-      }
-      render();
-    })
+    .then(init)
     .catch(() => {
       document.getElementById('emptyMsg').style.display = 'block';
     });
-
-  document.getElementById('orgFilter').addEventListener('change', render);
-  document.getElementById('startFilter').addEventListener('change', render);
-  document.getElementById('endFilter').addEventListener('change', render);
 </script>
 </body>
 </html>
