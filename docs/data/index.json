@@ -1,21 +1,12 @@
 [
   {
-    "org": "CBS - Curitiba Beach Sports",
-    "orgSlug": "cbs-curitiba-beach-sports",
-    "startDate": "2026-07-01",
-    "endDate": "2026-07-31",
-    "periodLabel": "1 a 31 de julho de 2026",
-    "file": "relatorios/cbs-curitiba-beach-sports-2026-07-01-a-2026-07-31.html",
-    "generatedAt": "2026-08-04T15:46:58.376Z"
-  },
-  {
     "org": "Top Sports",
     "orgSlug": "top-sports",
     "startDate": "2026-07-01",
     "endDate": "2026-07-08",
     "periodLabel": "1 a 8 de julho de 2026",
     "file": "relatorios/top-sports-2026-07-01-a-2026-07-08.html",
-    "generatedAt": "2026-08-04T15:43:31.152Z"
+    "generatedAt": "2026-08-04T16:21:00.749Z"
   },
   {
     "org": "Talula Cablepark",
@@ -25,5 +16,14 @@
     "periodLabel": "1 a 31 de julho de 2026",
     "file": "relatorios/talula-cablepark-2026-07-01-a-2026-07-31.html",
     "generatedAt": "2026-08-04T15:46:42.358Z"
+  },
+  {
+    "org": "CBS - Curitiba Beach Sports",
+    "orgSlug": "cbs-curitiba-beach-sports",
+    "startDate": "2026-07-01",
+    "endDate": "2026-07-31",
+    "periodLabel": "1 a 31 de julho de 2026",
+    "file": "relatorios/cbs-curitiba-beach-sports-2026-07-01-a-2026-07-31.html",
+    "generatedAt": "2026-08-04T15:46:58.376Z"
   }
 ]
