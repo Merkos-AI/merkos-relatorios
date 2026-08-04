@@ -1,0 +1,19 @@
+{
+  "name": "merkos-relatorios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Relatorios de atendimento com IA por cliente, isolado da producao do Merkos",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx scripts/generate-report.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

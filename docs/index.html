@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Relatórios de Atendimento com IA — Merkos</title>
+<style>
+  :root { --dark: #171110; --red: #c8102e; --border: #e5e2e0; --gray: #5c5c5c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fff; color: #1f1f1f; }
+  header { background: var(--dark); color: #fff; padding: 28px 32px; }
+  header h1 { margin: 0 0 4px; font-size: 20px; }
+  header p { margin: 0; opacity: .75; font-size: 14px; }
+  main { max-width: 880px; margin: 0 auto; padding: 32px; }
+  .filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  select, input {
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--gray); font-weight: 600; }
+  a.report-link { color: var(--red); text-decoration: none; font-weight: 600; }
+  a.report-link:hover { text-decoration: underline; }
+  .empty { color: var(--gray); padding: 24px 0; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Relatórios de Atendimento com IA</h1>
+    <p>Sistema isolado de relatórios por cliente — não afeta a produção do Merkos</p>
+  </header>
+  <main>
+    <div class="filters">
+      <select id="orgFilter"><option value="">Todos os clientes</option></select>
+      <input type="date" id="startFilter" title="A partir de" />
+      <input type="date" id="endFilter" title="Até" />
+    </div>
+    <table>
+      <thead>
+        <tr><th>Cliente</th><th>Período</th><th>Gerado em</th><th></th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="empty" id="emptyMsg" style="display:none">Nenhum relatório gerado ainda. Rode o workflow "Gerar relatório" no GitHub Actions.</p>
+  </main>
+
+<script>
+  let allEntries = [];
+
+  function render() {
+    const orgFilter = document.getElementById('orgFilter').value;
+    const startFilter = document.getElementById('startFilter').value;
+    const endFilter = document.getElementById('endFilter').value;
+
+    let filtered = allEntries.filter((e) => {
+      if (orgFilter && e.orgSlug !== orgFilter) return false;
+      if (startFilter && e.endDate < startFilter) return false;
+      if (endFilter && e.startDate > endFilter) return false;
+      return true;
+    });
+
+    const rows = document.getElementById('rows');
+    rows.innerHTML = filtered
+      .map(
+        (e) => `<tr>
+          <td>${e.org}</td>
+          <td>${e.periodLabel}</td>
+          <td>${new Date(e.generatedAt).toLocaleDateString('pt-BR')}</td>
+          <td><a class="report-link" href="${e.file}" target="_blank">Abrir relatório →</a></td>
+        </tr>`,
+      )
+      .join('');
+
+    document.getElementById('emptyMsg').style.display = filtered.length === 0 ? 'block' : 'none';
+  }
+
+  fetch('data/index.json')
+    .then((r) => r.json())
+    .then((data) => {
+      allEntries = data;
+      const orgs = [...new Map(data.map((e) => [e.orgSlug, e.org])).entries()];
+      const select = document.getElementById('orgFilter');
+      for (const [slug, name] of orgs) {
+        const opt = document.createElement('option');
+        opt.value = slug;
+        opt.textContent = name;
+        select.appendChild(opt);
+      }
+      render();
+    })
+    .catch(() => {
+      document.getElementById('emptyMsg').style.display = 'block';
+    });
+
+  document.getElementById('orgFilter').addEventListener('change', render);
+  document.getElementById('startFilter').addEventListener('change', render);
+  document.getElementById('endFilter').addEventListener('change', render);
+</script>
+</body>
+</html>
