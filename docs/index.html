@@ -173,7 +173,6 @@
     <label>Até
       <div class="dp-wrap" id="endPickerWrap"></div>
     </label>
-    <button id="filterBtn" type="button">Filtrar</button>
   </div>
   <div class="shortcuts" id="shortcuts">
     <button type="button" class="chip" data-kind="7d">Últimos 7 dias</button>
@@ -308,7 +307,7 @@
     return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   }
 
-  function createDatePicker(wrapId) {
+  function createDatePicker(wrapId, onChange) {
     const wrap = document.getElementById(wrapId);
     let selectedISO = '';
     let viewYear = new Date().getFullYear();
@@ -402,6 +401,7 @@
       updateLabel();
       panel.classList.remove('open');
       clearActiveChip();
+      if (onChange) onChange();
     });
 
     document.addEventListener('click', (ev) => {
@@ -421,8 +421,8 @@
     };
   }
 
-  const startPicker = createDatePicker('startPickerWrap');
-  const endPicker = createDatePicker('endPickerWrap');
+  const startPicker = createDatePicker('startPickerWrap', () => applyFilter());
+  const endPicker = createDatePicker('endPickerWrap', () => applyFilter());
 
   // ---- Atalhos de periodo (chips) ----
   function isoFromDate(d) {
@@ -573,7 +573,8 @@
     // Padrao: primeiro cliente em ordem alfabetica + ultimos 30 dias selecionados
     orgSelect.value = requestedEntry ? requestedEntry.orgSlug : orgs[0][0];
 
-    document.getElementById('filterBtn').addEventListener('click', applyFilter);
+    // Sem botao "Filtrar": trocar cliente ja reaplica o filtro com as datas atuais
+    orgSelect.addEventListener('change', applyFilter);
     // pdfBtn e recriado a cada render do relatorio, entao usa delegacao de evento
     document.addEventListener('click', (ev) => {
       if (ev.target.closest('#pdfBtn')) window.print();
