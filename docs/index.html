@@ -136,11 +136,12 @@
   footer { padding: 24px 32px; font-size: 12px; color: var(--gray); border-top: 1px solid var(--border); }
   footer b { color: #1f1f1f; }
   .empty { color: var(--gray); padding: 24px 32px; }
+  .h2-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .pdf-btn {
-    padding: 10px 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff;
-    color: #1f1f1f; font-size: 14px; font-weight: 700; cursor: pointer;
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; background: #fff;
+    color: var(--gray); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
   }
-  .pdf-btn:hover { background: #f7f5f4; }
+  .pdf-btn:hover { background: #f7f5f4; color: #1f1f1f; }
 
   @media (max-width: 600px) {
     .cards, .insight-grid { grid-template-columns: 1fr; }
@@ -173,7 +174,6 @@
       <div class="dp-wrap" id="endPickerWrap"></div>
     </label>
     <button id="filterBtn" type="button">Filtrar</button>
-    <button id="pdfBtn" type="button" class="pdf-btn" style="display:none">⬇ Baixar PDF</button>
   </div>
   <div class="shortcuts" id="shortcuts">
     <button type="button" class="chip" data-kind="7d">Últimos 7 dias</button>
@@ -250,7 +250,10 @@
 
     document.getElementById('reportView').innerHTML = `
       <main>
-        <h2>Como a IA atendeu seus clientes no WhatsApp</h2>
+        <div class="h2-row">
+          <h2>Como a IA atendeu seus clientes no WhatsApp</h2>
+          <button id="pdfBtn" type="button" class="pdf-btn">⬇ Baixar PDF</button>
+        </div>
         <p class="lead">Resumo de todas as conversas do período: o volume de mensagens, quanto a assistente virtual resolveu sozinha e quais assuntos ainda precisaram da sua equipe — com as oportunidades para a IA atender ainda mais.</p>
 
         <div class="cards">
@@ -493,12 +496,24 @@
     const emptyMsg = document.getElementById('emptyMsg');
 
     if (matches.length === 0) {
-      document.getElementById('reportView').innerHTML = '';
-      document.getElementById('pdfBtn').style.display = 'none';
-      periodNote.style.display = 'none';
-      emptyMsg.style.display = 'block';
       const orgName = document.getElementById('orgSelect').selectedOptions[0]?.textContent ?? '';
-      document.getElementById('headerSubtitle').textContent = `${orgName} · nenhum relatório nesse período`;
+      const fallback = allEntries
+        .filter((e) => e.orgSlug === orgSlug)
+        .sort((a, b) => (a.startDate < b.startDate ? 1 : -1));
+
+      if (fallback.length === 0) {
+        document.getElementById('reportView').innerHTML = '';
+        periodNote.style.display = 'none';
+        emptyMsg.style.display = 'block';
+        document.getElementById('headerSubtitle').textContent = `${orgName} · nenhum relatório gerado ainda`;
+        return;
+      }
+
+      // Sem relatorio pro periodo exato: mostra o mais recente disponivel pra nao ficar em branco
+      emptyMsg.style.display = 'none';
+      periodNote.style.display = 'block';
+      periodNote.textContent = `Nenhum relatório gerado para esse período exato. Mostrando o mais recente disponível de ${orgName}: ${fallback[0].periodLabel}.`;
+      loadReport(fallback[0].dataFile);
       return;
     }
     emptyMsg.style.display = 'none';
@@ -546,7 +561,8 @@
       return;
     }
 
-    const orgs = [...new Map(entries.map((e) => [e.orgSlug, e.org])).entries()];
+    const orgs = [...new Map(entries.map((e) => [e.orgSlug, e.org])).entries()]
+      .sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
     const orgSelect = document.getElementById('orgSelect');
     orgSelect.innerHTML = orgs.map(([slug, name]) => `<option value="${slug}">${name}</option>`).join('');
 
@@ -554,16 +570,22 @@
     const requested = params.get('r');
     const requestedEntry = requested ? entries.find((e) => e.dataFile === requested) : null;
 
+    // Padrao: primeiro cliente em ordem alfabetica + ultimos 30 dias selecionados
     orgSelect.value = requestedEntry ? requestedEntry.orgSlug : orgs[0][0];
+
+    document.getElementById('filterBtn').addEventListener('click', applyFilter);
+    // pdfBtn e recriado a cada render do relatorio, entao usa delegacao de evento
+    document.addEventListener('click', (ev) => {
+      if (ev.target.closest('#pdfBtn')) window.print();
+    });
+
     if (requestedEntry) {
       startPicker.setValue(requestedEntry.startDate);
       endPicker.setValue(requestedEntry.endDate);
+      applyFilter();
+    } else {
+      applyShortcut('30d', document.querySelector('.chip[data-kind="30d"]'));
     }
-
-    applyFilter();
-
-    document.getElementById('filterBtn').addEventListener('click', applyFilter);
-    document.getElementById('pdfBtn').addEventListener('click', () => window.print());
   }
 
   fetch('data/index.json')
