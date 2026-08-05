@@ -56,6 +56,14 @@
   .period-note { padding: 0 32px; margin-top: 8px; font-size: 13px; color: var(--gray); }
   .period-note select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
 
+  .shortcuts { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 32px 0; }
+  .chip {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; background: #fff;
+    font-size: 13px; color: #1f1f1f; cursor: pointer; font-family: inherit;
+  }
+  .chip:hover { background: #f7f5f4; }
+  .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
   /* Date picker (mesmo padrao visual do sistema Merkos: shadcn/ui + react-day-picker) */
   .dp-wrap { position: relative; }
   .dp-trigger {
@@ -166,6 +174,13 @@
     </label>
     <button id="filterBtn" type="button">Filtrar</button>
     <button id="pdfBtn" type="button" class="pdf-btn" style="display:none">⬇ Baixar PDF</button>
+  </div>
+  <div class="shortcuts" id="shortcuts">
+    <button type="button" class="chip" data-kind="7d">Últimos 7 dias</button>
+    <button type="button" class="chip" data-kind="30d">Últimos 30 dias</button>
+    <button type="button" class="chip" data-kind="lastMonth">Mês passado</button>
+    <button type="button" class="chip" data-kind="thisMonth">Mês atual</button>
+    <button type="button" class="chip" data-kind="90d">Últimos 90 dias</button>
   </div>
   <p class="period-note" id="periodNote" style="display:none"></p>
 
@@ -383,6 +398,7 @@
       selectedISO = btn.dataset.iso;
       updateLabel();
       panel.classList.remove('open');
+      clearActiveChip();
     });
 
     document.addEventListener('click', (ev) => {
@@ -404,6 +420,57 @@
 
   const startPicker = createDatePicker('startPickerWrap');
   const endPicker = createDatePicker('endPickerWrap');
+
+  // ---- Atalhos de periodo (chips) ----
+  function isoFromDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function addDaysLocal(d, days) {
+    const copy = new Date(d);
+    copy.setDate(copy.getDate() + days);
+    return copy;
+  }
+
+  function clearActiveChip() {
+    document.querySelectorAll('.chip.active').forEach((c) => c.classList.remove('active'));
+  }
+
+  function applyShortcut(kind, chipEl) {
+    const today = new Date();
+    let start, end;
+
+    if (kind === '7d') {
+      start = addDaysLocal(today, -6);
+      end = today;
+    } else if (kind === '30d') {
+      start = addDaysLocal(today, -29);
+      end = today;
+    } else if (kind === '90d') {
+      start = addDaysLocal(today, -89);
+      end = today;
+    } else if (kind === 'thisMonth') {
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = today;
+    } else if (kind === 'lastMonth') {
+      const firstOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = addDaysLocal(firstOfThisMonth, -1);
+      start = new Date(end.getFullYear(), end.getMonth(), 1);
+    }
+
+    startPicker.setValue(isoFromDate(start));
+    endPicker.setValue(isoFromDate(end));
+    clearActiveChip();
+    chipEl.classList.add('active');
+    applyFilter();
+  }
+
+  document.querySelectorAll('#shortcuts .chip').forEach((chip) => {
+    chip.addEventListener('click', () => applyShortcut(chip.dataset.kind, chip));
+  });
 
   // Um relatorio "cobre" o filtro se o intervalo dele tem qualquer sobreposicao
   // com [startFilter, endFilter]. Datas em branco = sem limite naquele lado.
