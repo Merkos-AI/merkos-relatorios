@@ -485,43 +485,45 @@
 
   function applyFilter() {
     const orgSlug = document.getElementById('orgSelect').value;
+    const orgName = document.getElementById('orgSelect').selectedOptions[0]?.textContent ?? '';
     const startFilter = startPicker.getValue();
     const endFilter = endPicker.getValue();
-
-    const matches = allEntries
-      .filter((e) => e.orgSlug === orgSlug && matchesDateFilter(e, startFilter, endFilter))
-      .sort((a, b) => (a.startDate < b.startDate ? 1 : -1));
 
     const periodNote = document.getElementById('periodNote');
     const emptyMsg = document.getElementById('emptyMsg');
 
-    if (matches.length === 0) {
-      const orgName = document.getElementById('orgSelect').selectedOptions[0]?.textContent ?? '';
-      const fallback = allEntries
-        .filter((e) => e.orgSlug === orgSlug)
-        .sort((a, b) => (a.startDate < b.startDate ? 1 : -1));
+    const allForOrg = allEntries
+      .filter((e) => e.orgSlug === orgSlug)
+      .sort((a, b) => (a.startDate < b.startDate ? 1 : -1));
 
-      if (fallback.length === 0) {
-        document.getElementById('reportView').innerHTML = '';
-        periodNote.style.display = 'none';
-        emptyMsg.style.display = 'block';
-        document.getElementById('headerSubtitle').textContent = `${orgName} · nenhum relatório gerado ainda`;
-        return;
-      }
-
-      // Sem relatorio pro periodo exato: mostra o mais recente disponivel pra nao ficar em branco
-      emptyMsg.style.display = 'none';
-      periodNote.style.display = 'block';
-      periodNote.textContent = `Nenhum relatório gerado para esse período exato. Mostrando o mais recente disponível de ${orgName}: ${fallback[0].periodLabel}.`;
-      loadReport(fallback[0].dataFile);
+    if (allForOrg.length === 0) {
+      document.getElementById('reportView').innerHTML = '';
+      periodNote.style.display = 'none';
+      emptyMsg.style.display = 'block';
+      document.getElementById('headerSubtitle').textContent = `${orgName} · nenhum relatório gerado ainda`;
       return;
     }
     emptyMsg.style.display = 'none';
 
-    if (matches.length > 1) {
+    const noFilter = !startFilter && !endFilter;
+    const overlapping = noFilter ? [] : allForOrg.filter((e) => matchesDateFilter(e, startFilter, endFilter));
+    const chosen = overlapping.length > 0 ? overlapping[0] : allForOrg[0];
+    const isExactMatch = !noFilter && chosen.startDate === startFilter && chosen.endDate === endFilter;
+
+    if (noFilter || isExactMatch) {
+      periodNote.style.display = 'none';
+    } else {
+      // Ou nao ha nenhum relatorio que cubra o periodo pedido, ou o unico que "cobre"
+      // nao bate exatamente com as datas escolhidas (ex: relatorio antigo dentro de uma
+      // janela de "ultimos N dias"). Deixa isso explicito pra nao parecer que travou.
       periodNote.style.display = 'block';
-      periodNote.innerHTML = `${matches.length} relatórios encontrados nesse intervalo — mostrando o mais recente (${matches[0].periodLabel}). Outros: ${matches
-        .slice(1)
+      periodNote.textContent = `Não há relatório gerado exatamente para esse período. Mostrando o mais próximo disponível de ${orgName}: ${chosen.periodLabel}.`;
+    }
+
+    if (isExactMatch && overlapping.length > 1) {
+      periodNote.style.display = 'block';
+      periodNote.innerHTML = `${overlapping.length} relatórios encontrados nesse intervalo — mostrando ${chosen.periodLabel}. Outros: ${overlapping
+        .filter((m) => m !== chosen)
         .map((m) => `<a href="#" data-file="${m.dataFile}" class="pick-period">${m.periodLabel}</a>`)
         .join(', ')}`;
       periodNote.querySelectorAll('.pick-period').forEach((a) => {
@@ -530,11 +532,9 @@
           loadReport(a.dataset.file);
         });
       });
-    } else {
-      periodNote.style.display = 'none';
     }
 
-    loadReport(matches[0].dataFile);
+    loadReport(chosen.dataFile);
   }
 
   function loadReport(dataFile) {
